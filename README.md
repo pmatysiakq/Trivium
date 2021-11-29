@@ -13,4 +13,4 @@ Celem projektu jest implementacja lekkiego szyfru strumieniowego - Trivium.
 ## TODO List
 
 - [x] Przygotować raport
-- [] Napisać własną implementację wybranego szyfru
+- [ ] Napisać własną implementację wybranego szyfru
