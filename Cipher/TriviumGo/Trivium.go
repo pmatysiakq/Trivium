@@ -1,22 +1,20 @@
+// https://www.ecrypt.eu.org/stream/p3ciphers/trivium/trivium_p3.pdf
 package TriviumGo
 
 import (
 	"fmt"
 	"os"
-	"strconv"
-	"strings"
 )
 
+// Trivium represents Trivium Cipher
 type Trivium struct {
-	// https://www.ecrypt.eu.org/stream/p3ciphers/trivium/trivium_p3.pdf
-	// https://github.com/uisyudha/Trivium
 	State [288]uint8
 	Key string
 	Iv string
 }
 
-//func LogState
-
+// NewTrivium creates new cipher with `key` and `iv` arguments
+// Returns new Trivium object
 func NewTrivium(key, iv string) *Trivium {
 	return &Trivium{
 		Iv: iv,
@@ -24,42 +22,8 @@ func NewTrivium(key, iv string) *Trivium {
 	}
 }
 
-func StringToBin(s string) (binArray []uint8) {
-	var binString string
-	for _, c := range s {
-		byteValue := fmt.Sprintf("%b", c)
-		if len(byteValue) < 8 {
-			count := 8 - len(byteValue)
-			byteValue = strings.Repeat("0", count) + byteValue
-		}
-		binString = fmt.Sprintf("%s%s", binString, byteValue)
-	}
-	for i := 0; i < len(binString); i++ {
-		temp, err := strconv.Atoi(string(binString[i]))
-		if err != nil {
-			fmt.Printf("error::%s\n", err)
-		}
-		binArray = append(binArray, uint8(temp))
-	}
-	return
-}
-
-func BinToString(b []uint8) (plaintext string) {
-	var words []string
-	for i := 0; i < len(b); i += 8 {
-		var word string
-		for j :=0; j < 8; j++ {
-			word += strconv.Itoa(int(b[i+j]))
-		}
-		words = append(words, word)
-	}
-	for i := 0; i < len(words); i++ {
-		plaintext += string(bitString(words[i]).AsByteSlice())
-	}
-
-	return
-}
-
+// Encrypt is used to encrypt given message
+// Returns encrypted message in []int8 format compatible with decrypt
 func (t *Trivium) Encrypt(msg string) (ciphertext []uint8) {
 
 	messageBinArray := StringToBin(msg)
@@ -77,6 +41,7 @@ func (t *Trivium) Encrypt(msg string) (ciphertext []uint8) {
 	return
 }
 
+// Decrypt is used to retrieve encrypted message
 func (t *Trivium) Decrypt(ciphertext []uint8) (message string) {
 	var msg []uint8
 	keyStream := t.GenerateKeyStream(len(ciphertext))
@@ -133,24 +98,19 @@ func (t *Trivium) KeyStreamGenerator() (keyStream uint8) {
 
 func (t *Trivium) Initialize() {
 	var initState []uint8
-	for i := 0; i < len(t.Key); i++ {
-		temp, err := strconv.Atoi(string(t.Key[i]))
-		if err != nil {
-			fmt.Printf("error::%s\n", err)
-		}
-		initState = append(initState, uint8(temp))
+
+	var KEY []uint8 = HexToBin(t.Key)
+	for i := 0; i < len(KEY); i++ {
+		initState = append(initState, KEY[i])
 	}
 
 	for i := 0; i < 13; i++ {
 		initState = append(initState, uint8(0))
 	}
 
-	for i := 0; i < len(t.Iv); i++ {
-		temp, err := strconv.Atoi(string(t.Iv[i]))
-		if err != nil {
-			fmt.Printf("error::%s\n", err)
-		}
-		initState = append(initState, uint8(temp))
+	var IV []uint8 = HexToBin(t.Iv)
+	for i := 0; i < len(IV); i++ {
+		initState = append(initState, IV[i])
 	}
 
 	for i := 0; i < 112; i++ {
@@ -159,9 +119,9 @@ func (t *Trivium) Initialize() {
 	initState = append(initState, []uint8{1, 1, 1}...)
 
 	if len(initState) == 288 {
-		fmt.Printf("LOG::State assembly sucess!\n")
+		//fmt.Printf("LOG::State assembly sucess! | KeyStream length: %v\n", len(initState))
 	} else {
-		fmt.Printf("LOG::State assembly failed!\n")
+		fmt.Printf("LOG::State assembly failed! | KeyStream length: %v\n", len(initState))
 	}
 
 	for index, value := range initState {
@@ -171,25 +131,4 @@ func (t *Trivium) Initialize() {
 	for i := 0; i < 4*288; i++ {
 		t.KeyStreamGenerator()
 	}
-}
-
-type bitString string
-
-func (b bitString) AsByteSlice() []byte {
-	var out []byte
-	var str string
-
-	for i := len(b); i > 0; i -= 8 {
-		if i-8 < 0 {
-			str = string(b[0:i])
-		} else {
-			str = string(b[i-8 : i])
-		}
-		v, err := strconv.ParseUint(str, 2, 8)
-		if err != nil {
-			panic(err)
-		}
-		out = append([]byte{byte(v)}, out...)
-	}
-	return out
 }
