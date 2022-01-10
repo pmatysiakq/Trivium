@@ -1,46 +1,45 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/pmatysiakq/Trivium/Cipher/TriviumGo"
 )
 
 func main() {
-	var key, iv string
+	var key, iv, message string
+	var encrypt, decrypt bool
 
-	key = "576557416e744d417850"
-	iv = "486954726976756d2121"
+	flag.StringVar(&key, "k", "", "A key to encrypt/decrypt message (80 bit, hex)")
+	flag.StringVar(&iv, "i", "", "An iv to encrypt/decrypt message (80 bit, hex)")
+	flag.BoolVar(&encrypt, "e", false, "Encrypt message")
+	flag.BoolVar(&decrypt, "d", false, "Decrypt encrypted message in the fly. Disallowed without '-e' flag")
+	flag.StringVar(&message, "m", "", "Message to be encrypted/decrypted (Plaintext not encoded)")
+	flag.String("c", "", "Do not use. Not implemented!")
 
-	triviumEncrypt := TriviumGo.NewTrivium(key, iv)
-	ciphertext := triviumEncrypt.Encrypt("Ala ma kota!")
-	fmt.Println("Ciphertext:", ciphertext)
+	flag.Parse()
 
-	triviumDecrypt := TriviumGo.NewTrivium(key, iv)
-	plaintext := triviumDecrypt.Decrypt(ciphertext)
-	fmt.Println("Plaintext:", plaintext)
+	var ciphertext []uint8
+	var cipherHex string
+
+	if encrypt {
+		fmt.Println("---------- ENCRYPTION ----------")
+		triviumEncrypt := TriviumGo.NewTrivium(key, iv)
+		ciphertext, cipherHex = triviumEncrypt.Encrypt(message)
+		fmt.Println("Ciphertext:", cipherHex)
+		fmt.Println("--------------------------------")
+	} else if decrypt {
+		fmt.Println("----------- ERROR -----------")
+		fmt.Println("Decrypt not implemented!")
+		fmt.Println("You can decrypt on fly currently encrypted message")
+		fmt.Println("-----------------------------")
+	}
+
+	if encrypt && decrypt {
+		fmt.Println("---------- DECRYPTION ----------")
+		triviumDecrypt := TriviumGo.NewTrivium(key, iv)
+		plaintext := triviumDecrypt.Decrypt(ciphertext)
+		fmt.Println("Plaintext:", plaintext)
+		fmt.Println("--------------------------------")
+	}
 }
-
-//func main() {
-//	var key, iv, message string
-//	var encrypt, decrypt bool
-//
-//	flag.StringVar(&key, "k", "", "A key to encrypt/decrypt message (80 bit - binary)")
-//	flag.StringVar(&iv, "i", "", "An iv to encrypt/decrypt message (80 bit - binary")
-//	flag.BoolVar(&encrypt, "e", true, "Encrypt message")
-//	flag.BoolVar(&decrypt, "d", true, "Decrypt message")
-//	flag.StringVar(&message, "m", "", "Message to be encrypted/decrypted")
-//
-//	// fdeFsSfgeDeSD (== 80 bitów) TODO
-//	//key = "10011000110001000100100001101001011000010000101110110100111111110110110101001011"
-//	//iv = "11111100100111011010110010010011110010110110001111001100010110110110100101110100"
-//
-//	if encrypt {
-//		triviumEncrypt := TriviumGo.NewTrivium(key, iv)
-//		//ciphertext := triviumEncrypt.Encrypt("Ale ma kota, a kot ma ale XD !!!@@#")
-//		ciphertext := triviumEncrypt.Encrypt(message)
-//		fmt.Println("Ciphertext:", ciphertext)
-//	} else if decrypt {
-//		triviumDecrypt := TriviumGo.NewTrivium(key, iv)
-//		plaintext := triviumDecrypt.Decrypt([]uint8(message))
-//		fmt.Println("Plaintext:", plaintext)
-//	}

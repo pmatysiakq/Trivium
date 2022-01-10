@@ -24,7 +24,7 @@ func NewTrivium(key, iv string) *Trivium {
 
 // Encrypt is used to encrypt given message
 // Returns encrypted message in []int8 format compatible with decrypt
-func (t *Trivium) Encrypt(msg string) (ciphertext []uint8) {
+func (t *Trivium) Encrypt(msg string) (ciphertext []uint8, cipherHex string) {
 
 	messageBinArray := StringToBin(msg)
 
@@ -32,12 +32,14 @@ func (t *Trivium) Encrypt(msg string) (ciphertext []uint8) {
 
 	if len(messageBinArray) != len(keyStream) {
 		fmt.Println("LOG::Message and KeyStream are of different size!")
-		os.Exit(0)
+		os.Exit(2137)
 	}
 
 	for i := 0; i < len(messageBinArray); i++ {
 		ciphertext = append(ciphertext, messageBinArray[i] ^ keyStream[i])
 	}
+
+	cipherHex = fmt.Sprintf("%x", BinToString(ciphertext))
 	return
 }
 
@@ -100,6 +102,11 @@ func (t *Trivium) Initialize() {
 	var initState []uint8
 
 	var KEY []uint8 = HexToBin(t.Key)
+	if len(KEY) != 80 {
+		fmt.Printf("Provide the Key of lenght 80 bits not %v bits\nQuitting!\n", len(KEY))
+		os.Exit(2137)
+	}
+
 	for i := 0; i < len(KEY); i++ {
 		initState = append(initState, KEY[i])
 	}
@@ -109,6 +116,11 @@ func (t *Trivium) Initialize() {
 	}
 
 	var IV []uint8 = HexToBin(t.Iv)
+	if len(IV) != 80 {
+		fmt.Printf("Provide the IV of lenght 80 bits not %v bits\nQuitting!\n", len(IV))
+		os.Exit(2137)
+	}
+
 	for i := 0; i < len(IV); i++ {
 		initState = append(initState, IV[i])
 	}
@@ -122,6 +134,7 @@ func (t *Trivium) Initialize() {
 		//fmt.Printf("LOG::State assembly sucess! | KeyStream length: %v\n", len(initState))
 	} else {
 		fmt.Printf("LOG::State assembly failed! | KeyStream length: %v\n", len(initState))
+		os.Exit(2137)
 	}
 
 	for index, value := range initState {
