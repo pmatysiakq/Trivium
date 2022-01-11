@@ -2,6 +2,7 @@
 package TriviumGo
 
 import (
+	"encoding/hex"
 	"fmt"
 	"os"
 )
@@ -23,38 +24,54 @@ func NewTrivium(key, iv string) *Trivium {
 }
 
 // Encrypt is used to encrypt given message
-// Returns encrypted message in []int8 format compatible with decrypt
-func (t *Trivium) Encrypt(msg string) (ciphertext []uint8, cipherHex string) {
+// Returns encrypted message in hex format
+func (t *Trivium) Encrypt(msg string) (cipherHex string) {
 
-	//messageBinArray := StringToBin(msg)
 	messageBinArray := HexToBin(msg)
 
 	keyStream := t.GenerateKeyStream(len(messageBinArray))
+
+	fmt.Println("KeyStream Decrypt:", BinToHex(keyStream))
+
 
 	if len(messageBinArray) != len(keyStream) {
 		fmt.Println("LOG::Message and KeyStream are of different size!")
 		os.Exit(2137)
 	}
-
+	var cipherBinArr []uint8
 	for i := 0; i < len(messageBinArray); i++ {
-		ciphertext = append(ciphertext, messageBinArray[i]^keyStream[i])
+		cipherBinArr = append(cipherBinArr, messageBinArray[i]^keyStream[i])
 	}
 
-	cipherHex = BinToHex(ciphertext)
+	cipherHex = BinToHex(cipherBinArr)
 	return
 }
 
 // Decrypt is used to retrieve encrypted message
-func (t *Trivium) Decrypt(ciphertext []uint8) (message string) {
-	var msg []uint8
-	keyStream := t.GenerateKeyStream(len(ciphertext))
+// Returns decrypted plaintext
+func (t *Trivium) Decrypt(cipherHex string) (plaintext, plainHex string) {
 
-	for i := 0; i < len(ciphertext); i++ {
-		msg = append(msg, ciphertext[i]^keyStream[i])
+	messageBinArray := HexToBin(cipherHex)
+
+	keyStream := t.GenerateKeyStream(len(messageBinArray))
+
+	fmt.Println(fmt.Sprintf("KeyStream Decrypt: %s", keyStream))
+
+	if len(messageBinArray) != len(keyStream) {
+		fmt.Println("LOG::Message and KeyStream are of different size!")
+		os.Exit(2137)
+	}
+	var cipherBinArr []uint8
+	for i := 0; i < len(messageBinArray); i++ {
+		cipherBinArr = append(cipherBinArr, messageBinArray[i]^keyStream[i])
 	}
 
-	message = BinToHex(msg)
-
+	plainHex = BinToHex(cipherBinArr)
+	temp, err := hex.DecodeString(plainHex)
+	if err != nil {
+		os.Exit(2137)
+	}
+	plaintext = fmt.Sprintf("%s", temp)
 	return
 }
 
@@ -72,10 +89,10 @@ func (t *Trivium) UpdateState(t1, t2, t3 uint8) {
 }
 
 func (t *Trivium) GenerateKeyStream(msgLen int) (keyStream []uint8) {
+
 	t.Initialize()
 
 	counter := 0
-
 	for counter < msgLen {
 		keyStream = append(keyStream, t.KeyStreamGenerator())
 		counter++
@@ -86,13 +103,13 @@ func (t *Trivium) GenerateKeyStream(msgLen int) (keyStream []uint8) {
 func (t *Trivium) KeyStreamGenerator() (keyStream uint8) {
 	t1 := t.State[65] ^ t.State[92]
 	t2 := t.State[161] ^ t.State[176]
-	t3 := t.State[242] ^ t.State[267]
+	t3 := t.State[242] ^ t.State[287]
 
 	keyStream = t1 ^ t2 ^ t3
 
-	t1 = t1 ^ t.State[90]&t.State[91] ^ t.State[170]
-	t2 = t1 ^ t.State[174]&t.State[175] ^ t.State[263]
-	t3 = t1 ^ t.State[285]&t.State[286] ^ t.State[68]
+	t1 = t1 ^ t.State[90] & t.State[91] ^ t.State[170]
+	t2 = t2 ^ t.State[174] & t.State[175] ^ t.State[263]
+	t3 = t3 ^ t.State[285] & t.State[286] ^ t.State[68]
 
 	t.UpdateState(t1, t2, t3)
 
