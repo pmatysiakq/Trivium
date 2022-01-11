@@ -9,15 +9,15 @@ import (
 // Trivium represents Trivium Cipher
 type Trivium struct {
 	State [288]uint8
-	Key string
-	Iv string
+	Key   string
+	Iv    string
 }
 
 // NewTrivium creates new cipher with `key` and `iv` arguments
 // Returns new Trivium object
 func NewTrivium(key, iv string) *Trivium {
 	return &Trivium{
-		Iv: iv,
+		Iv:  iv,
 		Key: key,
 	}
 }
@@ -26,7 +26,8 @@ func NewTrivium(key, iv string) *Trivium {
 // Returns encrypted message in []int8 format compatible with decrypt
 func (t *Trivium) Encrypt(msg string) (ciphertext []uint8, cipherHex string) {
 
-	messageBinArray := StringToBin(msg)
+	//messageBinArray := StringToBin(msg)
+	messageBinArray := HexToBin(msg)
 
 	keyStream := t.GenerateKeyStream(len(messageBinArray))
 
@@ -36,10 +37,10 @@ func (t *Trivium) Encrypt(msg string) (ciphertext []uint8, cipherHex string) {
 	}
 
 	for i := 0; i < len(messageBinArray); i++ {
-		ciphertext = append(ciphertext, messageBinArray[i] ^ keyStream[i])
+		ciphertext = append(ciphertext, messageBinArray[i]^keyStream[i])
 	}
 
-	cipherHex = fmt.Sprintf("%x", BinToString(ciphertext))
+	cipherHex = BinToHex(ciphertext)
 	return
 }
 
@@ -49,17 +50,17 @@ func (t *Trivium) Decrypt(ciphertext []uint8) (message string) {
 	keyStream := t.GenerateKeyStream(len(ciphertext))
 
 	for i := 0; i < len(ciphertext); i++ {
-		msg = append(msg, ciphertext[i] ^ keyStream[i])
+		msg = append(msg, ciphertext[i]^keyStream[i])
 	}
 
-	message = BinToString(msg)
+	message = BinToHex(msg)
 
 	return
 }
 
-func (t *Trivium) UpdateState(t1, t2, t3 uint8){
+func (t *Trivium) UpdateState(t1, t2, t3 uint8) {
 	var newState [288]uint8
-	for i := 0; i < len(t.State) - 1; i++ {
+	for i := 0; i < len(t.State)-1; i++ {
 		newState[i+1] = t.State[i]
 	}
 
@@ -89,9 +90,9 @@ func (t *Trivium) KeyStreamGenerator() (keyStream uint8) {
 
 	keyStream = t1 ^ t2 ^ t3
 
-	t1 = t1 ^ t.State[90] & t.State[91] ^ t.State[170]
-	t2 = t1 ^ t.State[174] & t.State[175] ^ t.State[263]
-	t3 = t1 ^ t.State[285] & t.State[286] ^ t.State[68]
+	t1 = t1 ^ t.State[90]&t.State[91] ^ t.State[170]
+	t2 = t1 ^ t.State[174]&t.State[175] ^ t.State[263]
+	t3 = t1 ^ t.State[285]&t.State[286] ^ t.State[68]
 
 	t.UpdateState(t1, t2, t3)
 
