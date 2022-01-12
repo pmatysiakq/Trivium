@@ -4,42 +4,40 @@ import (
 	"flag"
 	"fmt"
 	"github.com/pmatysiakq/Trivium/Cipher/TriviumGo"
+	"strings"
 )
 
 func main() {
-	var key, iv, message string
-	var encrypt, decrypt bool
+	var key, iv, msg, cipher, mode string
 
-	flag.StringVar(&key, "k", "", "A key to encrypt/decrypt message (80 bit, hex)")
-	flag.StringVar(&iv, "i", "", "An iv to encrypt/decrypt message (80 bit, hex)")
-	flag.BoolVar(&encrypt, "e", false, "Encrypt message")
-	flag.BoolVar(&decrypt, "d", false, "Decrypt encrypted message in the fly. Disallowed without '-e' flag")
-	flag.StringVar(&message, "m", "", "Message to be encrypted/decrypted (Plaintext not encoded)")
-	flag.String("c", "", "Do not use. Not implemented!")
+
+	flag.StringVar(&key, "key", "", "A KEY to encrypt/decrypt message (80 bit, HEX)")
+	flag.StringVar(&iv, "iv", "", "An IV to encrypt/decrypt message (80 bit, HEX)")
+	flag.StringVar(&mode, "mode", "null", "e - encrypt, d - decrypt output HEX," +
+		" dp - decrypt - output HEX and PLAINTEXT")
+	flag.StringVar(&msg, "msg", "", "Message to be encrypted/decrypted (HEX))")
+	flag.StringVar(&cipher,"cipher", "", "Ciphertext to decrypt (HEX)")
 
 	flag.Parse()
 
-	var ciphertext []uint8
-	var cipherHex string
-
-	if encrypt {
+	if strings.ToLower(mode) == "e" {
 		fmt.Println("---------- ENCRYPTION ----------")
 		triviumEncrypt := TriviumGo.NewTrivium(key, iv)
-		ciphertext, cipherHex = triviumEncrypt.Encrypt(message)
+		cipherHex := triviumEncrypt.Encrypt(msg)
 		fmt.Println("Ciphertext:", cipherHex)
 		fmt.Println("--------------------------------")
-	} else if decrypt {
-		fmt.Println("----------- ERROR -----------")
-		fmt.Println("Decrypt not implemented!")
-		fmt.Println("You can decrypt on fly currently encrypted message")
-		fmt.Println("-----------------------------")
 	}
 
-	if encrypt && decrypt {
+	if strings.ToLower(mode) == "d" ||  strings.ToLower(mode) == "dp" {
 		fmt.Println("---------- DECRYPTION ----------")
 		triviumDecrypt := TriviumGo.NewTrivium(key, iv)
-		plaintext := triviumDecrypt.Decrypt(ciphertext)
-		fmt.Println("Plaintext:", plaintext)
+		plaintext, plainHex := triviumDecrypt.Decrypt(cipher)
+		fmt.Println("Plaintext (hex):", plainHex)
+
+		if strings.ToLower(mode) == "dp" {
+			fmt.Println("Plaintext:", plaintext)
+		}
 		fmt.Println("--------------------------------")
 	}
+
 }

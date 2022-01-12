@@ -2,6 +2,7 @@
 package TriviumGo
 
 import (
+	"encoding/hex"
 	"fmt"
 	"os"
 )
@@ -9,24 +10,24 @@ import (
 // Trivium represents Trivium Cipher
 type Trivium struct {
 	State [288]uint8
-	Key string
-	Iv string
+	Key   string
+	Iv    string
 }
 
 // NewTrivium creates new cipher with `key` and `iv` arguments
 // Returns new Trivium object
 func NewTrivium(key, iv string) *Trivium {
 	return &Trivium{
-		Iv: iv,
+		Iv:  iv,
 		Key: key,
 	}
 }
 
-// Encrypt is used to encrypt given message
-// Returns encrypted message in []int8 format compatible with decrypt
-func (t *Trivium) Encrypt(msg string) (ciphertext []uint8, cipherHex string) {
+// Encrypt is used to encode message, given as Hex string
+// Returns encrypted message in hex format
+func (t *Trivium) Encrypt(msg string) (cipherHex string) {
 
-	messageBinArray := StringToBin(msg)
+	messageBinArray := HexToBin(msg)
 
 	keyStream := t.GenerateKeyStream(len(messageBinArray))
 
@@ -34,32 +35,46 @@ func (t *Trivium) Encrypt(msg string) (ciphertext []uint8, cipherHex string) {
 		fmt.Println("LOG::Message and KeyStream are of different size!")
 		os.Exit(2137)
 	}
-
+	var cipherBinArr []uint8
 	for i := 0; i < len(messageBinArray); i++ {
-		ciphertext = append(ciphertext, messageBinArray[i] ^ keyStream[i])
+		cipherBinArr = append(cipherBinArr, messageBinArray[i]^keyStream[i])
 	}
 
-	cipherHex = fmt.Sprintf("%x", BinToString(ciphertext))
+	cipherHex = BinToHex(cipherBinArr)
 	return
 }
 
-// Decrypt is used to retrieve encrypted message
-func (t *Trivium) Decrypt(ciphertext []uint8) (message string) {
-	var msg []uint8
-	keyStream := t.GenerateKeyStream(len(ciphertext))
+// Decrypt is used to decode encrypted message, given as Hex string
+// Returns decoded plaintext
+func (t *Trivium) Decrypt(cipherHex string) (plaintext, plainHex string) {
 
-	for i := 0; i < len(ciphertext); i++ {
-		msg = append(msg, ciphertext[i] ^ keyStream[i])
+	messageBinArray := HexToBin(cipherHex)
+
+	keyStream := t.GenerateKeyStream(len(messageBinArray))
+
+	if len(messageBinArray) != len(keyStream) {
+		fmt.Println("LOG::Message and KeyStream are of different size!")
+		os.Exit(2137)
+	}
+	var cipherBinArr []uint8
+	for i := 0; i < len(messageBinArray); i++ {
+		cipherBinArr = append(cipherBinArr, messageBinArray[i]^keyStream[i])
 	}
 
-	message = BinToString(msg)
-
+	plainHex = BinToHex(cipherBinArr)
+	temp, err := hex.DecodeString(plainHex)
+	if err != nil {
+		os.Exit(2137)
+	}
+	plaintext = fmt.Sprintf("%s", temp)
 	return
 }
 
-func (t *Trivium) UpdateState(t1, t2, t3 uint8){
+// UpdateState shifts values one step to the right and in the internal state
+// and then replaces selected bits with values given as parameters
+func (t *Trivium) UpdateState(t1, t2, t3 uint8) {
 	var newState [288]uint8
-	for i := 0; i < len(t.State) - 1; i++ {
+	for i := 0; i < len(t.State)-1; i++ {
 		newState[i+1] = t.State[i]
 	}
 
@@ -70,11 +85,13 @@ func (t *Trivium) UpdateState(t1, t2, t3 uint8){
 	t.State[177] = t2
 }
 
+// GenerateKeyStream generates the KeyStream of the same length as length
+// of the message which will be encrypted/decrypted
 func (t *Trivium) GenerateKeyStream(msgLen int) (keyStream []uint8) {
+
 	t.Initialize()
 
 	counter := 0
-
 	for counter < msgLen {
 		keyStream = append(keyStream, t.KeyStreamGenerator())
 		counter++
@@ -82,22 +99,26 @@ func (t *Trivium) GenerateKeyStream(msgLen int) (keyStream []uint8) {
 	return
 }
 
+// KeyStreamGenerator is used to generate one bit of KeyStream which is returned
+// Also internal State is updated
 func (t *Trivium) KeyStreamGenerator() (keyStream uint8) {
 	t1 := t.State[65] ^ t.State[92]
 	t2 := t.State[161] ^ t.State[176]
-	t3 := t.State[242] ^ t.State[267]
+	t3 := t.State[242] ^ t.State[287]
 
 	keyStream = t1 ^ t2 ^ t3
 
 	t1 = t1 ^ t.State[90] & t.State[91] ^ t.State[170]
-	t2 = t1 ^ t.State[174] & t.State[175] ^ t.State[263]
-	t3 = t1 ^ t.State[285] & t.State[286] ^ t.State[68]
+	t2 = t2 ^ t.State[174] & t.State[175] ^ t.State[263]
+	t3 = t3 ^ t.State[285] & t.State[286] ^ t.State[68]
 
 	t.UpdateState(t1, t2, t3)
 
 	return
 }
 
+// Initialize is used to generate initState based on Key nad Iv
+// Then the internal state is Updated/Rotated over 4 full cycles (4*288)
 func (t *Trivium) Initialize() {
 	var initState []uint8
 
