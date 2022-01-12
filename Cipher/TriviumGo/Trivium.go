@@ -23,16 +23,13 @@ func NewTrivium(key, iv string) *Trivium {
 	}
 }
 
-// Encrypt is used to encrypt given message
+// Encrypt is used to encode message, given as Hex string
 // Returns encrypted message in hex format
 func (t *Trivium) Encrypt(msg string) (cipherHex string) {
 
 	messageBinArray := HexToBin(msg)
 
 	keyStream := t.GenerateKeyStream(len(messageBinArray))
-
-	fmt.Println("KeyStream Decrypt:", BinToHex(keyStream))
-
 
 	if len(messageBinArray) != len(keyStream) {
 		fmt.Println("LOG::Message and KeyStream are of different size!")
@@ -47,15 +44,13 @@ func (t *Trivium) Encrypt(msg string) (cipherHex string) {
 	return
 }
 
-// Decrypt is used to retrieve encrypted message
-// Returns decrypted plaintext
+// Decrypt is used to decode encrypted message, given as Hex string
+// Returns decoded plaintext
 func (t *Trivium) Decrypt(cipherHex string) (plaintext, plainHex string) {
 
 	messageBinArray := HexToBin(cipherHex)
 
 	keyStream := t.GenerateKeyStream(len(messageBinArray))
-
-	fmt.Println(fmt.Sprintf("KeyStream Decrypt: %s", keyStream))
 
 	if len(messageBinArray) != len(keyStream) {
 		fmt.Println("LOG::Message and KeyStream are of different size!")
@@ -75,6 +70,8 @@ func (t *Trivium) Decrypt(cipherHex string) (plaintext, plainHex string) {
 	return
 }
 
+// UpdateState shifts values one step to the right and in the internal state
+// and then replaces selected bits with values given as parameters
 func (t *Trivium) UpdateState(t1, t2, t3 uint8) {
 	var newState [288]uint8
 	for i := 0; i < len(t.State)-1; i++ {
@@ -88,6 +85,8 @@ func (t *Trivium) UpdateState(t1, t2, t3 uint8) {
 	t.State[177] = t2
 }
 
+// GenerateKeyStream generates the KeyStream of the same length as length
+// of the message which will be encrypted/decrypted
 func (t *Trivium) GenerateKeyStream(msgLen int) (keyStream []uint8) {
 
 	t.Initialize()
@@ -100,6 +99,8 @@ func (t *Trivium) GenerateKeyStream(msgLen int) (keyStream []uint8) {
 	return
 }
 
+// KeyStreamGenerator is used to generate one bit of KeyStream which is returned
+// Also internal State is updated
 func (t *Trivium) KeyStreamGenerator() (keyStream uint8) {
 	t1 := t.State[65] ^ t.State[92]
 	t2 := t.State[161] ^ t.State[176]
@@ -116,6 +117,8 @@ func (t *Trivium) KeyStreamGenerator() (keyStream uint8) {
 	return
 }
 
+// Initialize is used to generate initState based on Key nad Iv
+// Then the internal state is Updated/Rotated over 4 full cycles (4*288)
 func (t *Trivium) Initialize() {
 	var initState []uint8
 

@@ -51,43 +51,47 @@ go build -o trivium .
 *W dalszych przykładach używaj pliku `trivium.exe` - jeżeli pracujesz na windows 
 lub `trivium`, jeżeli pracujesz na Linux/macOS*
 
-#### Dozwolone flagi: -d -e -i -k -m
+#### Dozwolone flagi: -mode -msg -cipher -key -iv
 ```bash
-# .\trivium.exe -h
-  -d    Decrypt encrypted message in the fly. Disallowed without '-e' flag
-  -e    Encrypt message
-  -i string
-        An iv to encrypt/decrypt message (80 bit, hex)
-  -k string
-        A key to encrypt/decrypt message (80 bit, hex)
-  -m string
-        Message to be encrypted/decrypted
+# Usage of .\trivium.exe:
+  -cipher string
+        Ciphertext to decrypt (HEX)
+  -iv string
+        An IV to encrypt/decrypt message (80 bit, HEX)
+  -key string
+        A KEY to encrypt/decrypt message (80 bit, HEX)
+  -mode string
+        e - encrypt, d - decrypt output HEX, dp - decrypt - output HEX and PLAINTEXT (default "null")
+  -msg string
+        Message to be encrypted/decrypted (HEX))
+
 ```
 #### Kodowanie
-Zakoduj `-e` wiadomość `-m` przy użyciu 80-bitowego klucza `-k` oraz wektora inicjalizacji `-i`
+Aby zakodować wiadomość (msg), należy wywołać flagi: **-mode** ("e"), **-msg** (hex), **-key** (hex, 80 bit) oraz **-iv** (hex, 80 bit).
+
+***Przykłady:***
 ```bash
- .\trivium.exe -e -m "Hello darkness my old friend" -k "576557416e744d417850" -i "486954726976756d2121"
+# Example 1
+.\trivium.exe -mode "e" -msg "00000000000000000000000000000000000000" -key "80000000000000000000" -iv "00000000000000000000"
+
+# Example 2
+.\trivium.exe -mode "e" -msg "416A666F6E20637A79207369616A6F6D693F" -key "54656c636f52756c6573" -iv "4e696d6f6d706f6a6563"
 ```
 
 #### Dekodowanie
 
-Dekodowanie wymaga usprawnienia. Aktualnie możliwe jest zdekodowanie w locie aktualnie kodowanej wiadmości. 
-Poniższa operacja zwróci `Error`
+Aby zdekodować kryptogram (cipher), należy wywołać flagi: **-mode** ("d" lub "dp"), **-cipher** (hex), **-key** (hex, 80 bit) oraz **-iv** (hex, 80 bit).
 
+***Przykłady:***
 ```bash
- .\trivium.exe -d -k "576557416e744d417850" -i "486954726976756d2121" -c "55fa555dce7457a22fcae990ceb35baa9325dbc156189d8fd3a50584"
+# Example 1
+.\trivium.exe -mode "d" -cipher "BA9274EE1F7F46EB96638542A0D6976CF805B5" -key "80000000000000000000" -iv "00000000000000000000"
+
+.\trivium.exe -mode "dp" -cipher "BA9274EE1F7F46EB96638542A0D6976CF805B5" -key "80000000000000000000" -iv "00000000000000000000"
+
+# Example 2
+
+.\trivium.exe -mode "d" -cipher "CF8F3EA7D2A76A8D5D5A47E6E8C8F1C30C3D" -key "54656c636f52756c6573" -iv "4e696d6f6d706f6a6563"
+
+.\trivium.exe -mode "dp" -cipher "CF8F3EA7D2A76A8D5D5A47E6E8C8F1C30C3D" -key "54656c636f52756c6573" -iv "4e696d6f6d706f6a6563"
 ```
-
-#### Dekodowanie aktualnie kodowanej wiadomości
-
-Zakoduj `-e` wiadomość `-m`, a następnie zdekoduj `-d` otrzymany szyfrogram przy użyciu 80-bitowego
-klucza `-k` oraz wektora inicjalizacji `-i`
-
-```bash
- .\trivium.exe -e -d -m "Hello darkness my old friend" -k "576557416e744d417850" -i "486954726976756d2121"
-```
-
-## TODO List
-
-- [x] Przygotować raport
-- [x] Napisać własną implementację wybranego szyfru

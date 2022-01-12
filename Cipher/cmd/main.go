@@ -4,37 +4,37 @@ import (
 	"flag"
 	"fmt"
 	"github.com/pmatysiakq/Trivium/Cipher/TriviumGo"
+	"strings"
 )
 
 func main() {
-	var key, iv, message, cipher string
-	var encrypt, decrypt, printPlain bool
+	var key, iv, msg, cipher, mode string
 
-	flag.StringVar(&key, "k", "", "A key to encrypt/decrypt message (80 bit, hex)")
-	flag.StringVar(&iv, "i", "", "An iv to encrypt/decrypt message (80 bit, hex)")
-	flag.BoolVar(&encrypt, "e", false, "Encrypt message")
-	flag.BoolVar(&decrypt, "d", false, "Decrypt encrypted message. Use flag '-c' to provide ciphertext (hex)")
-	flag.BoolVar(&printPlain, "p", false, "If -d is provided, then decrypted msg will be printed in plaintext")
-	flag.StringVar(&message, "m", "", "Message to be encrypted/decrypted (Plaintext not encoded)")
-	flag.StringVar(&cipher,"c", "", "Ciphertext to decrypt in hex format")
+
+	flag.StringVar(&key, "key", "", "A KEY to encrypt/decrypt message (80 bit, HEX)")
+	flag.StringVar(&iv, "iv", "", "An IV to encrypt/decrypt message (80 bit, HEX)")
+	flag.StringVar(&mode, "mode", "null", "e - encrypt, d - decrypt output HEX," +
+		" dp - decrypt - output HEX and PLAINTEXT")
+	flag.StringVar(&msg, "msg", "", "Message to be encrypted/decrypted (HEX))")
+	flag.StringVar(&cipher,"cipher", "", "Ciphertext to decrypt (HEX)")
 
 	flag.Parse()
 
-	if encrypt {
+	if strings.ToLower(mode) == "e" {
 		fmt.Println("---------- ENCRYPTION ----------")
 		triviumEncrypt := TriviumGo.NewTrivium(key, iv)
-		cipherHex := triviumEncrypt.Encrypt(message)
+		cipherHex := triviumEncrypt.Encrypt(msg)
 		fmt.Println("Ciphertext:", cipherHex)
 		fmt.Println("--------------------------------")
 	}
 
-	if decrypt {
+	if strings.ToLower(mode) == "d" ||  strings.ToLower(mode) == "dp" {
 		fmt.Println("---------- DECRYPTION ----------")
 		triviumDecrypt := TriviumGo.NewTrivium(key, iv)
 		plaintext, plainHex := triviumDecrypt.Decrypt(cipher)
 		fmt.Println("Plaintext (hex):", plainHex)
 
-		if printPlain {
+		if strings.ToLower(mode) == "dp" {
 			fmt.Println("Plaintext:", plaintext)
 		}
 		fmt.Println("--------------------------------")
