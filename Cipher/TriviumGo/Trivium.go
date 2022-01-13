@@ -122,7 +122,15 @@ func (t *Trivium) KeyStreamGenerator() (keyStream uint8) {
 func (t *Trivium) Initialize() {
 	var initState []uint8
 
-	var KEY []uint8 = HexToBin(t.Key)
+	var KEY, IV []uint8
+	tmpKey := HexToBin(t.Key)
+	tmpIv := HexToBin(t.Iv)
+
+	for i:= 79; i >= 0; i-- {
+		KEY = append(KEY, tmpKey[i])
+		IV = append(IV, tmpIv[i])
+	}
+
 	if len(KEY) != 80 {
 		fmt.Printf("Provide the Key of lenght 80 bits not %v bits\nQuitting!\n", len(KEY))
 		os.Exit(2137)
@@ -136,7 +144,6 @@ func (t *Trivium) Initialize() {
 		initState = append(initState, uint8(0))
 	}
 
-	var IV []uint8 = HexToBin(t.Iv)
 	if len(IV) != 80 {
 		fmt.Printf("Provide the IV of lenght 80 bits not %v bits\nQuitting!\n", len(IV))
 		os.Exit(2137)
