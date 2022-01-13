@@ -46,3 +46,10 @@ func BinToHex(val []uint8) (hexOutput string) {
 
 	return hexOutput
 }
+
+func GenerateXZeroMsg(X int) (msg string){
+	for i :=0; i < X; i++ {
+		msg += "0"
+	}
+	return
+}

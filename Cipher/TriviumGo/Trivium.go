@@ -27,6 +27,10 @@ func NewTrivium(key, iv string) *Trivium {
 // Returns encrypted message in hex format
 func (t *Trivium) Encrypt(msg string) (cipherHex string) {
 
+	if len(msg) % 2 != 0 {
+		fmt.Printf("Please provide a valid HEX. Can't encode: %s", msg)
+		os.Exit(2137)
+	}
 	messageBinArray := HexToBin(msg)
 
 	keyStream := t.GenerateKeyStream(len(messageBinArray))
@@ -48,6 +52,10 @@ func (t *Trivium) Encrypt(msg string) (cipherHex string) {
 // Returns decoded plaintext
 func (t *Trivium) Decrypt(cipherHex string) (plaintext, plainHex string) {
 
+	if len(cipherHex) % 2 != 0 {
+		fmt.Printf("Please provide a valid HEX. Can't decode: %s", cipherHex)
+		os.Exit(2137)
+	}
 	messageBinArray := HexToBin(cipherHex)
 
 	keyStream := t.GenerateKeyStream(len(messageBinArray))
