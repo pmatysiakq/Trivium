@@ -47,6 +47,7 @@ func BinToHex(val []uint8) (hexOutput string) {
 	return hexOutput
 }
 
+// GenerateXZeroMsg is implemented for testing purposes only
 func GenerateXZeroMsg(X int) (msg string){
 	for i :=0; i < X; i++ {
 		msg += "0"

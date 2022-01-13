@@ -287,7 +287,7 @@ func TestTriviumLongMsg(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run("Testing:" + strconv.Itoa(index), func(t *testing.T) {
 			index++
-			// Take only slices of bits to comparison [1:64], [192:319], [488:511]
+			// Take only slices of bits to comparison [1:64], [65472:65599], [131008:131071]
 			calculated 	:= testCase.calculatedStreamKey[0:128] + testCase.calculatedStreamKey[130944:131200] + testCase.calculatedStreamKey[262016:]
 			expected 	:= testCase.expectedStreamKey
 
