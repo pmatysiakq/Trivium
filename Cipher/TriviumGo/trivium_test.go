@@ -406,7 +406,7 @@ func TestEfficiency(t *testing.T) {
 		//},
 	}
 
-	file, err := os.OpenFile("../trivium-efficiency.csv", os.O_CREATE, 0600)
+	file, err := os.OpenFile("../trivium-efficiency-2.csv", os.O_CREATE, 0600)
 	if err != nil {
 		panic(err)
 	}
@@ -416,7 +416,7 @@ func TestEfficiency(t *testing.T) {
 	}
 	file.Close()
 
-	file, err = os.OpenFile("../trivium-efficiency.csv", os.O_APPEND, 0600)
+	file, err = os.OpenFile("../trivium-efficiency-2.csv", os.O_APPEND, 0600)
 	if err != nil {
 		panic(err)
 	}
