@@ -2,8 +2,10 @@ package TriviumGo
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"testing"
+	"time"
 )
 
 // Initialize test vectors for basic encoding test
@@ -155,7 +157,7 @@ var (
 
 // Generate messages of zero bytes
 var plaintext = GenerateXZeroMsg(1024)
-var longPlaintext = GenerateXZeroMsg(262144)
+var longPlaintext = GenerateXZeroMsg(262144)	// 2^18 0.13MB??
 
 // TestTriviumEncoding is basic encoding test for short message
 func TestTriviumEncoding(t *testing.T) {
@@ -300,3 +302,145 @@ func TestTriviumLongMsg(t *testing.T) {
 	}
 }
 
+// TestTriviumLongMsg is advanced encoding test.
+// Here we provide very long message to encode.
+func TestEfficiency(t *testing.T) {
+	testCases := []struct{
+		msg 		string
+		msgLength	int
+	}{
+		{
+			// 2^3 HEX characters
+			msg: RandStringRunes(8),
+			msgLength: 8,
+		},
+		{
+			// 2^4 HEX characters
+			msg: RandStringRunes(16),
+			msgLength: 16,
+		},
+		{
+			// 2^5 HEX characters
+			msg: RandStringRunes(32),
+			msgLength: 32,
+		},
+		{
+			// 2^6 HEX characters
+			msg: RandStringRunes(64),
+			msgLength: 64,
+		},
+		{
+			// 2^7 HEX characters
+			msg: RandStringRunes(128),
+			msgLength: 128,
+		},
+		{
+			// 2^8 HEX characters
+			msg: RandStringRunes(256),
+			msgLength: 256,
+		},
+		{
+			// 2^9 HEX characters
+			msg: RandStringRunes(512),
+			msgLength: 512,
+		},
+		{
+			// 2^10 HEX characters
+			msg: RandStringRunes(1024),
+			msgLength: 1024,
+		},
+		{
+			// 2^11 HEX characters
+			msg: RandStringRunes(2048),
+			msgLength: 2048,
+		},
+		{
+			// 2^12 HEX characters
+			msg: RandStringRunes(4096),
+			msgLength: 4096,
+		},
+		{
+			// 2^13 HEX characters
+			msg: RandStringRunes(8192),
+			msgLength: 8192,
+
+		},
+		{
+			// 2^14 HEX characters
+			msg: RandStringRunes(16384),
+			msgLength: 16384,
+		},
+		{
+			// 2^15 HEX characters
+			msg: RandStringRunes(32768),
+			msgLength: 32768,
+		},
+		{// 2^16 HEX characters
+			msg: RandStringRunes(65536),
+			msgLength: 65536,
+		},
+		{
+			// 2^17 HEX characters
+			msg: RandStringRunes(131072),
+			msgLength: 131072,
+		},
+		{
+			// 2^18 HEX characters
+			msg: RandStringRunes(262144),
+			msgLength: 262144,
+		},
+		{
+			// 2^19 HEX characters
+			msg: RandStringRunes(524288),
+			msgLength: 524288,
+		},
+		//{
+		//	// 2^20 HEX characters
+		//	msg: RandStringRunes(1048576),
+		//	msgLength: 1048576,
+		//},
+		//{
+		//	// 2^21 HEX characters
+		//	msg: RandStringRunes(2097152),
+		//	msgLength: 2097152,
+		//},
+	}
+
+	file, err := os.OpenFile("../trivium-efficiency.csv", os.O_CREATE, 0600)
+	if err != nil {
+		panic(err)
+	}
+
+	if _, err := file.Write([]byte("msg-len,time-elapsed,peak-memory\n")); err != nil {
+		fmt.Printf("Couldn't write to file... Error:%v\n", err)
+	}
+	file.Close()
+
+	file, err = os.OpenFile("../trivium-efficiency.csv", os.O_APPEND, 0600)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	for _, testCase := range testCases {
+		t.Run("Msg Length:" + strconv.Itoa(testCase.msgLength), func(t *testing.T) {
+			startTime := time.Now()
+
+			startMemory := PrintMemUsage("Memory allocation start: ")
+			trivium := NewTrivium("54656c636f52756c6573", "4e696d6f6d706f6a6563")
+			trivium.Encrypt(testCase.msg)
+			stopTime := time.Now()
+			stopMemory := PrintMemUsage("Memory allocation end: ")
+
+			elapsedTime := stopTime.Sub(startTime)
+			memoryConsumed := stopMemory - startMemory
+			fmt.Printf("\tTotal time: %v\n", elapsedTime)
+			fmt.Printf("\tTotal memory usage: %v bytes\n", memoryConsumed)
+
+			line := fmt.Sprintf("%s,%s,%s\n", strconv.Itoa(testCase.msgLength), strconv.FormatInt(elapsedTime.Milliseconds(), 10), strconv.Itoa(int(memoryConsumed)))
+			if _, err := file.Write([]byte(line)); err != nil {
+				fmt.Printf("Couldn't write to file... Error:%v\n", err)
+			}
+		})
+	}
+}

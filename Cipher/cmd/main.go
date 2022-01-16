@@ -10,7 +10,6 @@ import (
 func main() {
 	var key, iv, msg, cipher, mode string
 
-
 	flag.StringVar(&key, "key", "", "A KEY to encrypt/decrypt message (80 bit, HEX)")
 	flag.StringVar(&iv, "iv", "", "An IV to encrypt/decrypt message (80 bit, HEX)")
 	flag.StringVar(&mode, "mode", "null", "e - encrypt, d - decrypt output HEX," +

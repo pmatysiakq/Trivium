@@ -1,6 +1,9 @@
 package TriviumGo
 
 import (
+	"fmt"
+	"math/rand"
+	"runtime"
 	"strconv"
 	"strings"
 )
@@ -53,4 +56,32 @@ func GenerateXZeroMsg(X int) (msg string){
 		msg += "0"
 	}
 	return
+}
+
+// RandStringRunes generates hexadecimal string containing n characters
+// Avaliable characters: [0-9] and [A-F]
+func RandStringRunes(n int) string {
+	var letterRunes = []rune("0123456789ABCDEF")
+
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
+}
+
+// PrintMemUsage outputs the total memory being used.
+// Returns this total memory parameter
+func PrintMemUsage(msg string) uint64{
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	fmt.Printf("\t%s = %v MiB\n", msg, bToMb(m.TotalAlloc))
+
+	return m.TotalAlloc
+
+}
+
+// bToMb converts bytes to MegaBytes
+func bToMb(b uint64) uint64 {
+	return b / 1024 / 1024
 }

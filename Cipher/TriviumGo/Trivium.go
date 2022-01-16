@@ -166,9 +166,7 @@ func (t *Trivium) Initialize() {
 	}
 	initState = append(initState, []uint8{1, 1, 1}...)
 
-	if len(initState) == 288 {
-		//fmt.Printf("LOG::State assembly sucess! | KeyStream length: %v\n", len(initState))
-	} else {
+	if len(initState) != 288 {
 		fmt.Printf("LOG::State assembly failed! | KeyStream length: %v\n", len(initState))
 		os.Exit(2137)
 	}

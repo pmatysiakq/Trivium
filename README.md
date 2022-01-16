@@ -1,6 +1,9 @@
 # Projekt KRYS
 
 ---
+Kod projektu jest udukomentowany przy użyciu komentarzy w plikach *.go
+
+---
 
 ## Skład zespołu:
 
@@ -66,8 +69,8 @@ lub `trivium`, jeżeli pracujesz na Linux/macOS*
         Message to be encrypted/decrypted (HEX))
 
 ```
-#### Kodowanie
-Aby zakodować wiadomość (msg), należy wywołać flagi: **-mode** ("e"), **-msg** (hex), **-key** (hex, 80 bit) oraz **-iv** (hex, 80 bit).
+#### Szyfrowanie
+Aby zaszyfrować wiadomość (msg), należy wywołać flagi: **-mode** ("e"), **-msg** (hex), **-key** (hex, 80 bit) oraz **-iv** (hex, 80 bit).
 
 ***Przykłady:***
 ```bash
@@ -78,20 +81,20 @@ Aby zakodować wiadomość (msg), należy wywołać flagi: **-mode** ("e"), **-m
 .\trivium.exe -mode "e" -msg "416A666F6E20637A79207369616A6F6D693F" -key "54656c636f52756c6573" -iv "4e696d6f6d706f6a6563"
 ```
 
-#### Dekodowanie
+#### Deszyfrowanie
 
-Aby zdekodować kryptogram (cipher), należy wywołać flagi: **-mode** ("d" lub "dp"), **-cipher** (hex), **-key** (hex, 80 bit) oraz **-iv** (hex, 80 bit).
+Aby zdeszyfrować kryptogram (cipher), należy wywołać flagi: **-mode** ("d" lub "dp"), **-cipher** (hex), **-key** (hex, 80 bit) oraz **-iv** (hex, 80 bit).
 
 ***Przykłady:***
 ```bash
 # Example 1
-.\trivium.exe -mode "d" -cipher "BA9274EE1F7F46EB96638542A0D6976CF805B5" -key "80000000000000000000" -iv "00000000000000000000"
+.\trivium.exe -mode "d" -cipher "38EB86FF730D7A9CAF8DF13A4420540DBB7B65" -key "80000000000000000000" -iv "00000000000000000000"
 
-.\trivium.exe -mode "dp" -cipher "BA9274EE1F7F46EB96638542A0D6976CF805B5" -key "80000000000000000000" -iv "00000000000000000000"
+.\trivium.exe -mode "dp" -cipher "38EB86FF730D7A9CAF8DF13A4420540DBB7B65" -key "80000000000000000000" -iv "00000000000000000000"
 
 # Example 2
 
-.\trivium.exe -mode "d" -cipher "CF8F3EA7D2A76A8D5D5A47E6E8C8F1C30C3D" -key "54656c636f52756c6573" -iv "4e696d6f6d706f6a6563"
+.\trivium.exe -mode "d" -cipher "D89507972D45AD8E9FF26175B49D512A86F9" -key "54656c636f52756c6573" -iv "4e696d6f6d706f6a6563"
 
-.\trivium.exe -mode "dp" -cipher "CF8F3EA7D2A76A8D5D5A47E6E8C8F1C30C3D" -key "54656c636f52756c6573" -iv "4e696d6f6d706f6a6563"
+.\trivium.exe -mode "dp" -cipher "D89507972D45AD8E9FF26175B49D512A86F9" -key "54656c636f52756c6573" -iv "4e696d6f6d706f6a6563"
 ```
